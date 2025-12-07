@@ -79,42 +79,46 @@ $csrfToken = generateCSRFToken();
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="form-wrapper">
-            <div class="logo">
-                <h1>HYPE</h1>
+    <div class="login-container">
+        <div class="login-image-section">
+            <img src="images/lata.webp" alt="HYPE Energy Drink" class="can-image">
+        </div>
+        
+        <div class="login-form-section">
+            <div class="form-wrapper">
+                <div class="logo">
+                    <h1>HYPE</h1>
+                </div>
+                                
+                <?php if (!empty($error)): ?>
+                    <div class="error-message">
+                        <p><?php echo htmlspecialchars($error); ?></p>
+                    </div>
+                <?php endif; ?>
+                
+                <form method="POST" action="login.php" id="loginForm">
+                    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+                    
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" 
+                               value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
+                               required maxlength="50" autocomplete="username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" 
+                               required autocomplete="current-password">
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Log In</button>
+                </form>
+                
+                <p class="form-footer">
+                    Don't have an account? <a href="signup.php">Sign up here</a>
+                </p>
             </div>
-            
-            <h2>Distributor Login</h2>
-            
-            <?php if (!empty($error)): ?>
-                <div class="error-message">
-                    <p><?php echo htmlspecialchars($error); ?></p>
-                </div>
-            <?php endif; ?>
-            
-            <form method="POST" action="login.php" id="loginForm">
-                <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-                
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" 
-                           value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
-                           required maxlength="50" autocomplete="username">
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" 
-                           required autocomplete="current-password">
-                </div>
-                
-                <button type="submit" class="btn-primary">Log In</button>
-            </form>
-            
-            <p class="form-footer">
-                Don't have an account? <a href="signup.php">Sign up here</a>
-            </p>
         </div>
     </div>
 </body>

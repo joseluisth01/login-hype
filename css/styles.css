@@ -89,13 +89,13 @@ body {
 }
 
 .form-wrapper {
-    background-color: var(--hype-dark-gray);
+    background-color: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(10px);
     padding: 3rem;
     border-radius: 12px;
     box-shadow: 0 20px 60px rgba(57, 255, 20, 0.1);
     width: 100%;
-    max-width: 450px;
-    border: 1px solid var(--hype-gray);
+    border: 1px solid rgba(64, 64, 64, 0.5);
 }
 
 /* ==================== LOGIN WITH IMAGE LAYOUT ==================== */
@@ -103,33 +103,35 @@ body {
     min-height: 100vh;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    background-color: var(--hype-black);
-}
-
-.login-image-section {
-    background: linear-gradient(135deg, var(--hype-black) 0%, var(--hype-dark-gray) 50%, var(--hype-black) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
     position: relative;
     overflow: hidden;
 }
 
-.login-image-section::before {
+.login-container::before {
     content: '';
     position: absolute;
     top: -50%;
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(57, 255, 20, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(57, 255, 20, 0.08) 0%, transparent 70%);
     animation: pulse 4s ease-in-out infinite;
+    pointer-events: none;
 }
 
 @keyframes pulse {
     0%, 100% { transform: scale(1); opacity: 0.5; }
     50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.login-image-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    position: relative;
+    z-index: 1;
 }
 
 .can-image {
@@ -152,12 +154,15 @@ body {
     align-items: center;
     justify-content: center;
     padding: 3rem;
-    background-color: var(--hype-black);
+    position: relative;
+    z-index: 1;
 }
 
 .login-form-section .form-wrapper {
-    max-width: 500px;
     width: 100%;
+    background-color: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(64, 64, 64, 0.5);
 }
 
 /* ==================== LOGO ==================== */
@@ -209,7 +214,7 @@ h3 {
 .form-group input {
     width: 100%;
     padding: 0.9rem;
-    background-color: var(--hype-gray);
+    background-color: rgba(42, 42, 42, 0.8);
     border: 2px solid var(--hype-light-gray);
     border-radius: 6px;
     color: var(--hype-white);
@@ -221,6 +226,7 @@ h3 {
     outline: none;
     border-color: var(--hype-green);
     box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.1);
+    background-color: rgba(42, 42, 42, 0.95);
 }
 
 .form-group input::placeholder {

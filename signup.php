@@ -71,63 +71,67 @@ $csrfToken = generateCSRFToken();
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="form-wrapper">
-            <div class="logo">
-                <h1>HYPE</h1>
-            </div>
-            
-            <h2>Create Distributor Account</h2>
-            
-            <?php if ($success): ?>
-                <div class="success-message">
-                    <p>Account created successfully! You can now <a href="login.php">log in</a>.</p>
+    <div class="login-container">
+        <div class="login-image-section">
+            <img src="images/lata.webp" alt="HYPE Energy Drink" class="can-image">
+        </div>
+        
+        <div class="login-form-section">
+            <div class="form-wrapper">
+                <div class="logo">
+                    <h1>HYPE</h1>
                 </div>
-            <?php else: ?>
-                <?php if (!empty($errors)): ?>
-                    <div class="error-message">
-                        <?php foreach ($errors as $error): ?>
-                            <p><?php echo htmlspecialchars($error); ?></p>
-                        <?php endforeach; ?>
+                                
+                <?php if ($success): ?>
+                    <div class="success-message">
+                        <p>Account created successfully! You can now <a href="login.php">log in</a>.</p>
                     </div>
+                <?php else: ?>
+                    <?php if (!empty($errors)): ?>
+                        <div class="error-message">
+                            <?php foreach ($errors as $error): ?>
+                                <p><?php echo htmlspecialchars($error); ?></p>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <form method="POST" action="signup.php" id="signupForm">
+                        <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+                        
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" name="username" 
+                                   value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
+                                   required maxlength="50" pattern="[a-zA-Z0-9_]+"
+                                   title="Only letters, numbers, and underscores allowed">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" 
+                                   value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
+                                   required maxlength="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                            <small>At least 8 characters with uppercase, lowercase, and numbers</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password_confirm">Confirm Password</label>
+                            <input type="password" id="password_confirm" name="password_confirm" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Create Account</button>
+                    </form>
+                    
+                    <p class="form-footer">
+                        Already have an account? <a href="login.php">Log in here</a>
+                    </p>
                 <?php endif; ?>
-                
-                <form method="POST" action="signup.php" id="signupForm">
-                    <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
-                    
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" id="username" name="username" 
-                               value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
-                               required maxlength="50" pattern="[a-zA-Z0-9_]+"
-                               title="Only letters, numbers, and underscores allowed">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" 
-                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
-                               required maxlength="100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                        <small>At least 8 characters with uppercase, lowercase, and numbers</small>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="password_confirm">Confirm Password</label>
-                        <input type="password" id="password_confirm" name="password_confirm" required>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">Create Account</button>
-                </form>
-                
-                <p class="form-footer">
-                    Already have an account? <a href="login.php">Log in here</a>
-                </p>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
     
