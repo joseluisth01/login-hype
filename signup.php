@@ -1,6 +1,6 @@
 <?php
-require_once 'config.php';
 require_once 'security.php';
+require_once 'config.php';
 
 if (isLoggedIn()) {
     redirectTo('dashboard.php');
@@ -13,49 +13,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
         $errors[] = 'Invalid security token. Please try again.';
     } else {
-        $username = sanitizeInput($_POST['username'] ?? '');
-        $email = sanitizeInput($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
-        $passwordConfirm = $_POST['password_confirm'] ?? '';
-        
-        if (empty($username) || strlen($username) < 3 || strlen($username) > 50) {
-            $errors[] = 'Username must be between 3 and 50 characters.';
-        } elseif (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
-            $errors[] = 'Username can only contain letters, numbers, and underscores.';
-        }
-        
-        if (empty($email) || !validateEmail($email)) {
-            $errors[] = 'Please enter a valid email address.';
-        }
-        
-        if (empty($password) || !validatePassword($password)) {
-            $errors[] = 'Password must be at least 8 characters and contain uppercase, lowercase, and numbers.';
-        }
-        
-        if ($password !== $passwordConfirm) {
-            $errors[] = 'Passwords do not match.';
-        }
-        
-        if (empty($errors)) {
-            $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ? OR email = ?");
-            mysqli_stmt_bind_param($stmt, "ss", $username, $email);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_store_result($stmt);
+        if (checkSignupRateLimit($conn)) {
+            $errors[] = 'Too many registration attempts. Please try again later.';
+        } else {
+            $username = sanitizeInput($_POST['username'] ?? '');
+            $email = sanitizeInput($_POST['email'] ?? '');
+            $password = $_POST['password'] ?? '';
+            $passwordConfirm = $_POST['password_confirm'] ?? '';
             
-            if (mysqli_stmt_num_rows($stmt) > 0) {
-                $errors[] = 'Username or email already exists.';
-            } else {
-                $hashedPassword = hashPassword($password);
-                $stmt = mysqli_prepare($conn, "INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-                mysqli_stmt_bind_param($stmt, "sss", $username, $email, $hashedPassword);
+            if (empty($username)) {
+                $errors[] = 'Username is required.';
+            } elseif (!validateUsername($username)) {
+                $errors[] = 'Username must be 3-50 characters with only letters, numbers, and underscores.';
+            }
+            
+            if (empty($email)) {
+                $errors[] = 'Email is required.';
+            } elseif (!validateEmail($email)) {
+                $errors[] = 'Please enter a valid email address.';
+            }
+            
+            if (empty($password)) {
+                $errors[] = 'Password is required.';
+            } elseif (!validatePassword($password)) {
+                $errors[] = 'Password must be at least 8 characters with uppercase, lowercase, and numbers.';
+            }
+            
+            if ($password !== $passwordConfirm) {
+                $errors[] = 'Passwords do not match.';
+            }
+            
+            if (empty($errors)) {
+                $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
                 
-                if (mysqli_stmt_execute($stmt)) {
-                    $success = true;
+                if (!$stmt) {
+                    $errors[] = 'Database error. Please try again later.';
                 } else {
-                    $errors[] = 'Registration failed. Please try again.';
+                    mysqli_stmt_bind_param($stmt, "ss", $username, $email);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_store_result($stmt);
+                    
+                    if (mysqli_stmt_num_rows($stmt) > 0) {
+                        $errors[] = 'Username or email already exists.';
+                    } else {
+                        mysqli_stmt_close($stmt);
+                        
+                        $hashedPassword = hashPassword($password);
+                        $stmt = mysqli_prepare($conn, "INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+                        
+                        if (!$stmt) {
+                            $errors[] = 'Registration failed. Please try again.';
+                        } else {
+                            mysqli_stmt_bind_param($stmt, "sss", $username, $email, $hashedPassword);
+                            
+                            if (mysqli_stmt_execute($stmt)) {
+                                $success = true;
+                                logLoginAttempt($conn, $username, true);
+                            } else {
+                                $errors[] = 'Registration failed. Please try again.';
+                            }
+                            
+                            mysqli_stmt_close($stmt);
+                        }
+                    }
+                    
+                    if (isset($stmt) && $stmt !== false) {
+                        mysqli_stmt_close($stmt);
+                    }
                 }
             }
-            mysqli_stmt_close($stmt);
         }
     }
 }
@@ -81,10 +107,13 @@ $csrfToken = generateCSRFToken();
                 <div class="logo">
                     <h1>HYPE</h1>
                 </div>
-                                
+                
+                <h2>Create Account</h2>
+                
                 <?php if ($success): ?>
                     <div class="success-message">
-                        <p>Account created successfully! You can now <a href="login.php">log in</a>.</p>
+                        <p><strong>Success!</strong> Your account has been created.</p>
+                        <p>You can now <a href="login.php">log in</a> with your credentials.</p>
                     </div>
                 <?php else: ?>
                     <?php if (!empty($errors)): ?>
@@ -96,21 +125,28 @@ $csrfToken = generateCSRFToken();
                     <?php endif; ?>
                     
                     <form method="POST" action="signup.php" id="signupForm">
-                        <input type="hidden" name="csrf_token" value="<?php echo $csrfToken; ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                         
                         <div class="form-group">
                             <label for="username">Username</label>
-                            <input type="text" id="username" name="username" 
+                            <input type="text" 
+                                   id="username" 
+                                   name="username" 
                                    value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
-                                   required maxlength="50" pattern="[a-zA-Z0-9_]+"
+                                   required 
+                                   maxlength="50" 
+                                   pattern="[a-zA-Z0-9_]+"
                                    title="Only letters, numbers, and underscores allowed">
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email Address</label>
-                            <input type="email" id="email" name="email" 
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
                                    value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
-                                   required maxlength="100">
+                                   required 
+                                   maxlength="100">
                         </div>
                         
                         <div class="form-group">

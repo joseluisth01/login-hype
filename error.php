@@ -1,7 +1,7 @@
 <?php
 require_once 'security.php';
 
-$errorMessage = isset($_GET['msg']) ? sanitizeInput($_GET['msg']) : 'An error occurred during login.';
+$errorMessage = isset($_GET['msg']) ? substr(sanitizeInput($_GET['msg']), 0, 200) : 'An error occurred during login.';
 ?>
 <!DOCTYPE html>
 <html lang="en">

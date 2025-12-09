@@ -1,6 +1,6 @@
 <?php
-require_once 'config.php';
 require_once 'security.php';
+require_once 'config.php';
 
 if (!isLoggedIn()) {
     redirectTo('login.php');

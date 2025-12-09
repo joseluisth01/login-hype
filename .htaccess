@@ -20,7 +20,7 @@ Options -Indexes
 php_flag display_errors Off
 php_flag log_errors On
 
-# Session security
+# Session security - COMPATIBLE CON LOCALHOST (HTTP)
 php_value session.cookie_httponly 1
 php_value session.cookie_secure 0
 php_value session.use_strict_mode 1
