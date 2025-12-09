@@ -44,42 +44,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if (empty($errors)) {
-                $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
+                $checkStmt = mysqli_prepare($conn, "SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
                 
-                if (!$stmt) {
+                if (!$checkStmt) {
                     $errors[] = 'Database error. Please try again later.';
                 } else {
-                    mysqli_stmt_bind_param($stmt, "ss", $username, $email);
-                    mysqli_stmt_execute($stmt);
-                    mysqli_stmt_store_result($stmt);
+                    mysqli_stmt_bind_param($checkStmt, "ss", $username, $email);
+                    mysqli_stmt_execute($checkStmt);
+                    mysqli_stmt_store_result($checkStmt);
                     
-                    if (mysqli_stmt_num_rows($stmt) > 0) {
+                    if (mysqli_stmt_num_rows($checkStmt) > 0) {
                         $errors[] = 'Username or email already exists.';
                     } else {
-                        mysqli_stmt_close($stmt);
-                        
+                        // Usuario no existe, proceder con registro
                         $hashedPassword = hashPassword($password);
-                        $stmt = mysqli_prepare($conn, "INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+                        $insertStmt = mysqli_prepare($conn, "INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
                         
-                        if (!$stmt) {
+                        if (!$insertStmt) {
                             $errors[] = 'Registration failed. Please try again.';
                         } else {
-                            mysqli_stmt_bind_param($stmt, "sss", $username, $email, $hashedPassword);
+                            mysqli_stmt_bind_param($insertStmt, "sss", $username, $email, $hashedPassword);
                             
-                            if (mysqli_stmt_execute($stmt)) {
+                            if (mysqli_stmt_execute($insertStmt)) {
                                 $success = true;
                                 logLoginAttempt($conn, $username, true);
                             } else {
                                 $errors[] = 'Registration failed. Please try again.';
                             }
                             
-                            mysqli_stmt_close($stmt);
+                            mysqli_stmt_close($insertStmt);
                         }
                     }
                     
-                    if (isset($stmt) && $stmt !== false) {
-                        mysqli_stmt_close($stmt);
-                    }
+                    mysqli_stmt_close($checkStmt);
                 }
             }
         }
@@ -103,6 +100,19 @@ $csrfToken = generateCSRFToken();
         </div>
         
         <div class="login-form-section">
+            <button id="themeToggle" class="theme-toggle" title="Change theme">
+                <svg class="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
             <div class="form-wrapper">
                 <div class="logo">
                     <h1>HYPE</h1>
@@ -172,5 +182,6 @@ $csrfToken = generateCSRFToken();
     </div>
     
     <script src="js/validation.js"></script>
+    <script src="js/theme-toggle.js"></script>
 </body>
 </html>
